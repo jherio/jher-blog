@@ -15,3 +15,13 @@ jobs:
       - aws-cli/setup:
           role-arn: "arn:aws:iam::656980178089:role/CircleCI-OIDC"
           aws-region: ${AWS_REGION}
+      - run:
+        name: Log-into-AWS-ECR
+        command: |
+          aws ecr get-login-password
+
+workflows:
+  OIDC-with-AWS:
+    jobs:
+      - aws-example:
+          context: aws

@@ -1,0 +1,31 @@
+version: 2.1
+
+orbs:
+  aws-cli: circleci/aws-cli@3.1.5
+
+jobs:
+  aws-example:
+    environment:
+      AWS_REGION: eu-west-2
+    docker:
+      - image: cimg/aws:2023.06
+    steps:
+      - checkout
+      # run the aws-cli/setup command from the orb
+      - aws-cli/setup:
+          role-arn: "arn:aws:iam::656980178089:role/CircleCI-OIDC"
+          aws-region: ${AWS_REGION}
+          # optional parameters
+          profile-name: "CircleCI-OIDC"
+          role-session-name: "example-session"
+          session-duration: "1800"
+      - run:
+          name: Log-into-AWS-ECR
+          command: |
+            # must use same profile specified in the step above
+            aws ecr get-login-password --profile "CircleCI-OIDC"
+workflows:
+  OIDC-with-AWS:
+    jobs:
+      - aws-example:
+          context: aws

@@ -2,13 +2,13 @@
 
 This module is a work in progress as I setup a new website. The infrastructure is created on AWS using Terraform and consists of the below:
 
-1. ecr
-1. s3
-1. lambda
-1. api gateway
-1. cloudfront
-1. certificate manager
-1. route53
+- ecr
+- s3
+- lambda
+- api gateway
+- cloudfront
+- certificate manager
+- route53
 
 ## Getting Started
 
@@ -32,7 +32,7 @@ terraform plan
 terraform apply
 ```
 
-### Docker Image
+### Push Docker Image
 
 Login to ECR
 

@@ -29,7 +29,7 @@ We need to create an S3 bucket for storage of Terraform state files, a route53 h
 cd terraform/bootstrap
 terraform init
 terraform plan
-terraform apply
+terraform apply -var-file=dev.tfvars
 ```
 
 ### Push Docker Image
@@ -50,5 +50,5 @@ docker build -t <bootstrap_ecr_uri>/<image_name> . && docker push <bootstrap_ecr
 cd terraform
 terraform init
 terraform plan
-terraform apply
+terraform apply -var-file=dev.tfvars
 ```

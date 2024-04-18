@@ -1,33 +1,43 @@
+variable "region" {
+  description = "The region where AWS operations will take place."
+  type        = string
+  default     = "eu-west-2" // Set this to your desired default region
+}
+
 variable "environment" {
-  type = string
-  default = "prod"
+  description = "The environment for the infrastructure deployment."
+  type        = string
+  default     = ""
 }
 
 variable "domain_name" {
-  type = string
-  default = "jher.io"
+  description = "The domain name for the Route53 zone."
+  type        = string
+  default     = ""
 }
 
 variable "project_name" {
-  type = string
-  default = "jher-io"
+  description = "The name of the project."
+  type        = string
+  default     = ""
 }
 
 variable "image_name" {
-  type = string
-  default = "jher-io-container"
+  description = "The name of the Docker image for the ECR repository."
+  type        = string
+  default     = ""
 }
 
 variable "tags" {
- type = object({
-   Name = string
-   Env = string
-   Controller = string
- })
- description = "Tags for the EC2 instance"
- default = {
-   Name = "jher-io"
-   Env = "prod"
-   Controller = "Managed by Terraform"
- }
+  description = "Tags to be applied to resources that support tagging."
+  type = object({
+    Name       = string
+    Env        = string
+    Controller = string
+  })
+  default = {
+    Name       = ""
+    Env        = ""
+    Controller = "Managed by Terraform"
+  }
 }

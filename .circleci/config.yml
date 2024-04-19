@@ -1,0 +1,109 @@
+version: 2.1
+
+orbs:
+  aws-cli: circleci/aws-cli@3.1.5
+
+executors:
+  terraform:
+    docker:
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
+  tfsec:
+    docker:
+      - image: aquasec/tfsec-ci:latest
+
+jobs:
+  tfsec:
+    executor: tfsec
+    steps:
+      - checkout
+      - run:
+          name: tfsec
+          command: |
+            tfsec . -s
+
+  terraform-init:
+    executor: terraform
+    steps:
+      - checkout
+      - run:
+          name: Generate timestamped role session name
+          command: echo 'export ROLE_SESSION_NAME="terraform-init-session-$(date -u +"%Y%m%d%H%M%S")"' >> $BASH_ENV
+      - aws-cli/setup:
+          role-arn: ${AWS_ROLE_ARN}
+          aws-region: ${AWS_REGION}
+          profile-name: ${AWS_PROFILE_NAME}
+          role-session-name: ${ROLE_SESSION_NAME}
+          session-duration: "1800"
+      - run:
+          name: Initialize Terraform
+          command: |
+            if [ "$CIRCLE_BRANCH" == "dev" ]; then
+              export ENV_TYPE="dev"
+              terraform init -backend-config=dev_backend.hcl
+            elif [ "$CIRCLE_BRANCH" == "main" ]; then
+              export ENV_TYPE="prod"
+              terraform init -backend-config=prod_backend.hcl
+            else
+              echo "Unsupported branch: $CIRCLE_BRANCH"
+              exit 1
+            fi
+
+  terraform-plan:
+    executor: terraform
+    steps:
+      - checkout
+      - run:
+          name: Generate timestamped role session name
+          command: echo 'export ROLE_SESSION_NAME="terraform-plan-session-$(date -u +"%Y%m%d%H%M%S")"' >> $BASH_ENV
+      - aws-cli/setup:
+          role-arn: ${AWS_ROLE_ARN}
+          aws-region: ${AWS_REGION}
+          profile-name: ${AWS_PROFILE_NAME}
+          role-session-name: ${ROLE_SESSION_NAME}
+          session-duration: "1800"
+      - run:
+          name: Terraform Plan
+          command: |
+            terraform plan -out=tfplan
+      - persist_to_workspace:
+          root: .
+          paths:
+            - tfplan
+
+  terraform-apply:
+    executor: terraform
+    steps:
+      - checkout
+      - run:
+          name: Generate timestamped role session name
+          command: echo 'export ROLE_SESSION_NAME="terraform-apply-session-$(date -u +"%Y%m%d%H%M%S")"' >> $BASH_ENV
+      - attach_workspace:
+          at: .
+      - aws-cli/setup:
+          role-arn: ${AWS_ROLE_ARN}
+          aws-region: ${AWS_REGION}
+          profile-name: ${AWS_PROFILE_NAME}
+          role-session-name: ${ROLE_SESSION_NAME}
+          session-duration: "1800"
+      - run:
+          name: Terraform Apply
+          command: |
+            if [ "$CIRCLE_BRANCH" == "dev" ] || [ "$CIRCLE_BRANCH" == "main" ]; then
+              terraform apply -input=false tfplan
+            fi
+
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - tfsec
+      - terraform-init:
+          context: aws
+      - terraform-plan:
+          requires:
+            - terraform-init
+          context: aws
+      - terraform-apply:
+          requires:
+            - terraform-plan
+          context: aws

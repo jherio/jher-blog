@@ -29,10 +29,10 @@ jobs:
           name: Generate timestamped role session name
           command: echo 'export ROLE_SESSION_NAME="terraform-init-session-$(date -u +"%Y%m%d%H%M%S")"' >> $BASH_ENV
       - aws-cli/setup:
-          role-arn: ${AWS_ROLE_ARN}
-          aws-region: ${AWS_REGION}
-          profile-name: ${AWS_PROFILE_NAME}
-          role-session-name: ${ROLE_SESSION_NAME}
+          role-arn: AWS_ROLE_ARN
+          aws-region: AWS_REGION
+          profile-name: AWS_PROFILE_NAME
+          role-session-name: ROLE_SESSION_NAME
           session-duration: "1800"
       - run:
           name: Initialize Terraform
@@ -56,10 +56,10 @@ jobs:
           name: Generate timestamped role session name
           command: echo 'export ROLE_SESSION_NAME="terraform-plan-session-$(date -u +"%Y%m%d%H%M%S")"' >> $BASH_ENV
       - aws-cli/setup:
-          role-arn: ${AWS_ROLE_ARN}
-          aws-region: ${AWS_REGION}
-          profile-name: ${AWS_PROFILE_NAME}
-          role-session-name: ${ROLE_SESSION_NAME}
+          role-arn: AWS_ROLE_ARN
+          aws-region: AWS_REGION
+          profile-name: AWS_PROFILE_NAME
+          role-session-name: ROLE_SESSION_NAME
           session-duration: "1800"
       - run:
           name: Terraform Plan
@@ -80,10 +80,10 @@ jobs:
       - attach_workspace:
           at: .
       - aws-cli/setup:
-          role-arn: ${AWS_ROLE_ARN}
-          aws-region: ${AWS_REGION}
-          profile-name: ${AWS_PROFILE_NAME}
-          role-session-name: ${ROLE_SESSION_NAME}
+          role-arn: AWS_ROLE_ARN
+          aws-region: AWS_REGION
+          profile-name: AWS_PROFILE_NAME
+          role-session-name: ROLE_SESSION_NAME
           session-duration: "1800"
       - run:
           name: Terraform Apply
